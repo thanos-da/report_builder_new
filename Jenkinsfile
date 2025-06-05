@@ -18,16 +18,16 @@ pipeline {
           withEnv(["SSH_USER=ubuntu"]) {
             
           sh '''
-            echo "Using SSH Key at: $SSH_KEY"
+            echo "Using SSH Key at: $PEM_KEY"
             
             # Optionally create or update inventory dynamically
             cat <<EOF > inventory.yml
 all:
   hosts:
     rails-server:
-      ansible_host: 54.91.234.22
+      ansible_host: 
       ansible_user: $SSH_USER
-      ansible_ssh_private_key_file: $SSH_KEY
+      ansible_ssh_private_key_file: $PEM_KEY
   children:
     rails_servers:
       hosts:
