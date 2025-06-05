@@ -14,9 +14,9 @@ pipeline {
 
     stage('Deploy with Ansible') {
       steps {
-        withCredentials([sshUserPrivateKey(credentialsId: 'aws_ubuntu_user', 
-                                           keyFileVariable: 'SSH_KEY', 
-                                           usernameVariable: 'SSH_USER')]) {
+        withCredentials([file(credentialsId: 'aws_ec2_key', variable: 'PEM_KEY')]) {
+          withEnv(["SSH_USER=ubuntu"]) {
+            
           sh '''
             echo "Using SSH Key at: $SSH_KEY"
             
@@ -37,6 +37,7 @@ EOF
             # Run Ansible playbook
             ansible-playbook -i inventory.yml playbook.yml
           '''
+          }
         }
       }
     }
