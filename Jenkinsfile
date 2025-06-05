@@ -25,7 +25,7 @@ pipeline {
 all:
   hosts:
     rails-server:
-      ansible_host: 
+      ansible_host: 54.91.234.22
       ansible_user: $SSH_USER
       ansible_ssh_private_key_file: $PEM_KEY
   children:
