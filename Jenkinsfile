@@ -18,7 +18,6 @@ pipeline {
           withEnv(["SSH_USER=ubuntu"]) {
             sh '''
               echo "Using SSH Key at: $PEM_KEY"
-
               # Generate dynamic inventory file
               cat > inventory.yml <<EOF
 all:
@@ -32,7 +31,7 @@ all:
 EOF
 
               # Run the Ansible playbook
-              ansible-playbook -i inventory.yml playbook.yml
+              ansible-playbook -i inventory1.yml playbook.yml
             '''
           }
         }
