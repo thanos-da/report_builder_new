@@ -16,27 +16,24 @@ pipeline {
       steps {
         withCredentials([file(credentialsId: 'aws_ec2_key', variable: 'PEM_KEY')]) {
           withEnv(["SSH_USER=ubuntu"]) {
-            
-          sh '''
-            echo "Using SSH Key at: $PEM_KEY"
-            
-            # Optionally create or update inventory dynamically
-            cat <<EOF > inventory.yml
-                      all:
-                        hosts:
-                            rails-server:
-                              ansible_host: 54.173.135.9
-                              ansible_user: $SSH_USER
-                              ansible_ssh_private_key_file: $PEM_KEY
-                            children:
-                              rails_servers:
-                                hosts:
-                                  rails-server:
-                      EOF
+            sh '''
+              echo "Using SSH Key at: $PEM_KEY"
 
-            # Run Ansible playbook
-            ansible-playbook -i inventory.yml playbook.yml
-          '''
+              # Generate dynamic inventory file
+              cat > inventory.yml <<EOF
+all:
+  children:
+    rails_servers:
+      hosts:
+        rails-server:
+          ansible_host: 54.173.135.9
+          ansible_user: $SSH_USER
+          ansible_ssh_private_key_file: $PEM_KEY
+EOF
+
+              # Run the Ansible playbook
+              ansible-playbook -i inventory.yml playbook.yml
+            '''
           }
         }
       }
