@@ -22,17 +22,17 @@ pipeline {
             
             # Optionally create or update inventory dynamically
             cat <<EOF > inventory.yml
-all:
-  hosts:
-    rails-server:
-      ansible_host: 54.91.234.22
-      ansible_user: $SSH_USER
-      ansible_ssh_private_key_file: $PEM_KEY
-  children:
-    rails_servers:
-      hosts:
-        rails-server:
-EOF
+                      all:
+                        hosts:
+                            rails-server:
+                              ansible_host: 54.173.135.9
+                              ansible_user: $SSH_USER
+                              ansible_ssh_private_key_file: $PEM_KEY
+                            children:
+                              rails_servers:
+                                hosts:
+                                  rails-server:
+                      EOF
 
             # Run Ansible playbook
             ansible-playbook -i inventory.yml playbook.yml
