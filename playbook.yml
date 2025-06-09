@@ -72,6 +72,7 @@
 
   vars:
     rpx_user: "rpx"
+    rpx_grp: "rpx"
     openssl_version: "1.1.1w"
     openssl_prefix: "/opt/openssl-1.1"
     ruby_version: "3.0.0"
@@ -121,8 +122,18 @@
       args:
         creates: "{{ openssl_prefix }}/bin/openssl"
 
+    - name: Ensure GPG directory for rpx
+      file:
+        path: "/home/{{ rpx_user }}/.gnupg"
+        state: directory
+        owner: "{{ rpx_user }}"
+        group: "{{ rpx_grp }}"
+        mode: '0700'
+
     - name: Import GPG keys for RVM as rpx
       become_user: "{{ rpx_user }}"
+      environment:
+        GNUPGHOME: "/home/rpx/.gnupg"
       shell: |
         gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys \
         409B6B1796C275462A1703113804BB82D39DC0E3 \
