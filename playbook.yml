@@ -7,8 +7,8 @@
     remote_user: jenkins_deploy
   tasks:
     - name: Generate SSH key pair if not exists
-      become: true
-      become_user: ubuntu
+      #become: true
+      #become_user: ubuntu
       openssh_keypair:
         path: "{{ ssh_key_path }}"
         type: rsa
