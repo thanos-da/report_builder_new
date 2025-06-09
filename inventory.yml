@@ -3,4 +3,4 @@ all:
     your_aws_host:
       ansible_host: 44.201.206.78
       ansible_user: ubuntu
-      ansible_ssh_private_key_file: /path/to/your/key.pem
+      ansible_ssh_private_key_file: ./shankaraws.pem
