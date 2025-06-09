@@ -39,6 +39,32 @@ EOF
           '''
         }
       }
+
+      steps {
+        withCredentials([file(credentialsId: 'jenkins_key', variable: 'jenkins_key')]) {
+          sh '''
+            echo "Using SSH Key at: $jenkins_key"
+            chmod 600 $jenkins_key
+            
+            # Create minimal inventory file
+            cat > inventory1.yml <<EOF
+all:
+  children:
+    target:
+      hosts:
+        rails-server:
+          ansible_host: 44.201.206.78
+          ansible_user: rpx
+          ansible_ssh_private_key_file: $jenkins_key
+          ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+EOF
+
+            # Run the playbook directly on target server
+            ansible-playbook -i inventory.yml playbook.yml -v
+          '''
+        }
+      }
+      
     }
   }
 
