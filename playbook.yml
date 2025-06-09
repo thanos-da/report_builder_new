@@ -4,7 +4,7 @@
   vars:
     ssh_key_path: /home/ubuntu/.ssh/id_rsa
     public_key_path: public_key_path: /var/lib/jenkins/.ssh/id_rsa.pub
-    remote_user: jenkins_deploy
+    target_user: jenkins_deploy
   tasks:
     - name: Generate SSH key pair if not exists
       openssh_keypair:
@@ -25,15 +25,15 @@
       set_fact:
         jenkins_pub_key: "{{ pubkey_raw.content | b64decode }}"
 
-- name: Create remote user and install Jenkins key
+- name: Create target user and install Jenkins key
   hosts: all
   become: true
   vars:
-    remote_user: jenkins_deploy
+    target_user: jenkins_deploy
   tasks:
     - name: Create a new user with sudo privileges
       user:
-        name: "{{ remote_user }}"
+        name: "{{ target_user }}"
         shell: /bin/bash
         groups: sudo
         state: present
@@ -41,23 +41,23 @@
 
     - name: Create .ssh directory for new user
       file:
-        path: "/home/{{ remote_user }}/.ssh"
+        path: "/home/{{ target_user }}/.ssh"
         state: directory
         mode: '0700'
-        owner: "{{ remote_user }}"
-        group: "{{ remote_user }}"
+        owner: "{{ target_user }}"
+        group: "{{ target_user }}"
 
     - name: Add Jenkins public key to authorized_keys
       copy:
         content: "{{ hostvars['localhost']['jenkins_pub_key'] }}"
-        dest: "/home/{{ remote_user }}/.ssh/authorized_keys"
-        owner: "{{ remote_user }}"
-        group: "{{ remote_user }}"
+        dest: "/home/{{ target_user }}/.ssh/authorized_keys"
+        owner: "{{ target_user }}"
+        group: "{{ target_user }}"
         mode: '0600'
 
     - name: Allow passwordless sudo for new user
       lineinfile:
-        path: "/etc/sudoers.d/{{ remote_user }}"
+        path: "/etc/sudoers.d/{{ target_user }}"
         create: yes
         mode: '0440'
-        line: "{{ remote_user }} ALL=(ALL) NOPASSWD:ALL"
+        line: "{{ target_user }} ALL=(ALL) NOPASSWD:ALL"
