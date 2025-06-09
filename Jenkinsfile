@@ -32,28 +32,9 @@ all:
           ansible_user: ubuntu
           ansible_ssh_private_key_file: $PEM_KEY
           ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
-EOF
 
-            # Run the playbook directly on target server
-            ansible-playbook -i inventory.yml playbook.yml -v
-          '''
-        }
-      }
-
-      steps {
-        withCredentials([file(credentialsId: 'jenkins_key', variable: 'jenkins_key')]) {
-          sh '''
-            echo "Using SSH Key at: $jenkins_key"
-            chmod 600 $jenkins_key
-            
-            # Create minimal inventory file
-            cat > inventory1.yml <<EOF
-all:
-  children:
-    target:
-      hosts:
-        rails-server:
-          ansible_host: 44.201.206.78
+        rails-server-2:
+          ansible_host: 44.203.123.99
           ansible_user: rpx
           ansible_ssh_private_key_file: $jenkins_key
           ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
@@ -64,7 +45,6 @@ EOF
           '''
         }
       }
-      
     }
   }
 
