@@ -132,6 +132,8 @@
 
     - name: Import GPG keys for RVM as rpx
       become_user: "{{ rpx_user }}"
+      vars:
+        ansible_become_flags: "-n -H -S"
       environment:
         GNUPGHOME: "/home/rpx/.gnupg"
       shell: |
