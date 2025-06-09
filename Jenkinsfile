@@ -34,7 +34,7 @@ all:
           ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
 
         rails-server-2:
-          ansible_host: 44.203.123.99
+          ansible_host: 44.201.206.78
           ansible_user: rpx
           ansible_ssh_private_key_file: $jenkins_key
           ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
