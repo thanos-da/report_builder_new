@@ -3,14 +3,12 @@
   gather_facts: false
   vars:
     ssh_key_path: /home/ubuntu/.ssh/id_rsa
-    public_key_path: /home/ubuntu/.ssh/id_rsa.pub
+    public_key_path: public_key_path: /var/lib/jenkins/.ssh/id_rsa.pub
     remote_user: jenkins_deploy
   tasks:
     - name: Generate SSH key pair if not exists
-      #become: true
-      #become_user: ubuntu
       openssh_keypair:
-        path: "{{ ssh_key_path }}"
+        path: "/var/lib/jenkins/.ssh/id_rsa"
         type: rsa
         size: 2048
         mode: '0600'
