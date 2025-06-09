@@ -25,7 +25,7 @@ all:
     rails_servers:
       hosts:
         rails-server:
-          ansible_host: 54.173.135.9
+          ansible_host: 44.201.206.78
           ansible_user: ubuntu
           ansible_ssh_private_key_file: $PEM_KEY
 EOF
