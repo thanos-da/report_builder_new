@@ -29,7 +29,7 @@ all:
           ansible_user: ubuntu
           ansible_ssh_private_key_file: $PEM_KEY
 EOF
-
+            sh 'cat inventory.yml'
               # Run the Ansible playbook
               ansible-playbook -i inventory.yml playbook.yml
             '''
