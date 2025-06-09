@@ -1,6 +1,6 @@
 ---
 - name: Configure AWS server
-  hosts: rails-server
+  hosts: all
   become: true
   vars:
     new_username: "deployer"
