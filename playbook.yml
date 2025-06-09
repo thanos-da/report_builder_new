@@ -1,63 +1,46 @@
+---
 - name: Generate SSH key on Jenkins server and propagate to target server
   hosts: localhost
   gather_facts: false
+
   vars:
-    ssh_key_path: /home/ubuntu/.ssh/id_rsa
+    ssh_key_path: /var/lib/jenkins/.ssh/id_rsa
     public_key_path: /var/lib/jenkins/.ssh/id_rsa.pub
-    target_user: jenkins_deploy
+    target_user: jenkins 
+
   tasks:
+
     - name: Generate SSH key pair if not exists
-      openssh_keypair:
-        path: "/var/lib/jenkins/.ssh/id_rsa"
+      community.crypto.openssh_keypair:
+        path: "{{ ssh_key_path }}"
         type: rsa
         size: 2048
-        mode: '0600'
-      register: ssh_key_result
+        force: false
 
     - name: Read the public key
-      become: true
-      become_user: ubuntu
       slurp:
         src: "{{ public_key_path }}"
-      register: pubkey_raw
+      register: pub_key_content
 
-    - name: Set fact for Jenkins public key
-      set_fact:
-        jenkins_pub_key: "{{ pubkey_raw.content | b64decode }}"
-
-- name: Create target user and install Jenkins key
-  hosts: all
+- name: Create user and copy public key on remote hosts
+  hosts: target
   become: true
+  gather_facts: false
+
   vars:
-    target_user: jenkins_deploy
+    target_user: rpx
+
   tasks:
-    - name: Create a new user with sudo privileges
-      user:
+    - name: Ensure user exists
+      ansible.builtin.user:
         name: "{{ target_user }}"
         shell: /bin/bash
         groups: sudo
+        append: yes
+        create_home: yes
+
+    - name: Add public key to authorized_keys
+      ansible.posix.authorized_key:
+        user: "{{ target_user }}"
         state: present
-        create_home: true
-
-    - name: Create .ssh directory for new user
-      file:
-        path: "/home/{{ target_user }}/.ssh"
-        state: directory
-        mode: '0700'
-        owner: "{{ target_user }}"
-        group: "{{ target_user }}"
-
-    - name: Add Jenkins public key to authorized_keys
-      copy:
-        content: "{{ hostvars['localhost']['jenkins_pub_key'] }}"
-        dest: "/home/{{ target_user }}/.ssh/authorized_keys"
-        owner: "{{ target_user }}"
-        group: "{{ target_user }}"
-        mode: '0600'
-
-    - name: Allow passwordless sudo for new user
-      lineinfile:
-        path: "/etc/sudoers.d/{{ target_user }}"
-        create: yes
-        mode: '0440'
-        line: "{{ target_user }} ALL=(ALL) NOPASSWD:ALL"
+        key: "{{ hostvars['localhost'].pub_key_content.content | b64decode }}"
