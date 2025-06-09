@@ -24,12 +24,14 @@ pipeline {
             # Create minimal inventory file
             cat > inventory.yml <<EOF
 all:
-  hosts:
-    rails-sever:
-      ansible_host: 44.201.206.78
-      ansible_user: ubuntu
-      ansible_ssh_private_key_file: $PEM_KEY
-      ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+  children:
+    target:
+      hosts:
+        rails-server:
+          ansible_host: 44.201.206.78
+          ansible_user: ubuntu
+          ansible_ssh_private_key_file: $PEM_KEY
+          ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
 EOF
 
             # Run the playbook directly on target server
