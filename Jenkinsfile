@@ -31,7 +31,7 @@ all:
 EOF
 
               # Run the Ansible playbook
-              ansible-playbook -i inventory1.yml playbook.yml
+              ansible-playbook -i inventory.yml playbook.yml
             '''
           }
         }
