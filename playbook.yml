@@ -67,7 +67,7 @@
         state: restarted
         
 - name: Install Ruby 3.0.0 with RVM and custom OpenSSL for existing user 'rpx'
-  hosts: target_rpx
+  hosts: target #_rpx
   become: yes
 
   vars:
