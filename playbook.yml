@@ -1,53 +1,65 @@
----
-- name: Configure AWS server
+- name: Generate SSH key on Jenkins server and propagate to target server
+  hosts: localhost
+  gather_facts: false
+  vars:
+    ssh_key_path: /home/ubuntu/.ssh/id_rsa
+    public_key_path: /home/ubuntu/.ssh/id_rsa.pub
+    remote_user: jenkins_deploy
+  tasks:
+    - name: Generate SSH key pair if not exists
+      become: true
+      become_user: ubuntu
+      openssh_keypair:
+        path: "{{ ssh_key_path }}"
+        type: rsa
+        size: 2048
+        mode: '0600'
+      register: ssh_key_result
+
+    - name: Read the public key
+      become: true
+      become_user: ubuntu
+      slurp:
+        src: "{{ public_key_path }}"
+      register: pubkey_raw
+
+    - name: Set fact for Jenkins public key
+      set_fact:
+        jenkins_pub_key: "{{ pubkey_raw.content | b64decode }}"
+
+- name: Create remote user and install Jenkins key
   hosts: all
   become: true
   vars:
-    new_username: "deployer"
-    sudoers_file: "/etc/sudoers.d/90-{{ new_username }}"
-
+    remote_user: jenkins_deploy
   tasks:
-    - name: Create new user
+    - name: Create a new user with sudo privileges
       user:
-        name: "{{ new_username }}"
+        name: "{{ remote_user }}"
         shell: /bin/bash
         groups: sudo
-        append: yes
-        create_home: yes
-        home: "/home/{{ new_username }}"
-        password_lock: yes
-
-    - name: Create .ssh directory
-      file:
-        path: "/home/{{ new_username }}/.ssh"
-        state: directory
-        mode: 0700
-        owner: "{{ new_username }}"
-        group: "{{ new_username }}"
-
-    - name: Add current SSH key to authorized_keys
-      authorized_key:
-        user: "{{ new_username }}"
         state: present
-        key: "{{ lookup('file', '/home/ubuntu/.ssh/authorized_keys') }}"
+        create_home: true
 
-    - name: Configure sudo access
+    - name: Create .ssh directory for new user
+      file:
+        path: "/home/{{ remote_user }}/.ssh"
+        state: directory
+        mode: '0700'
+        owner: "{{ remote_user }}"
+        group: "{{ remote_user }}"
+
+    - name: Add Jenkins public key to authorized_keys
       copy:
-        content: "{{ new_username }} ALL=(ALL) NOPASSWD:ALL\n"
-        dest: "{{ sudoers_file }}"
-        mode: 0440
-        validate: 'visudo -cf %s'
+        content: "{{ hostvars['localhost']['jenkins_pub_key'] }}"
+        dest: "/home/{{ remote_user }}/.ssh/authorized_keys"
+        owner: "{{ remote_user }}"
+        group: "{{ remote_user }}"
+        mode: '0600'
 
-    - name: Harden SSH configuration
-      blockinfile:
-        path: /etc/ssh/sshd_config
-        block: |
-          PasswordAuthentication no
-          AllowUsers {{ new_username }} ubuntu
-      notify: restart sshd
-
-  handlers:
-    - name: restart sshd
-      service:
-        name: sshd
-        state: restarted
+    - name: Allow passwordless sudo for new user
+      lineinfile:
+        path: "/etc/sudoers.d/{{ remote_user }}"
+        create: yes
+        mode: '0440'
+        line: "{{ remote_user }} ALL=(ALL) NOPASSWD:ALL"
