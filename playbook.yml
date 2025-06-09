@@ -23,7 +23,7 @@
       register: pub_key_content
 
 - name: Create user and copy public key on remote hosts
-  hosts: target
+  hosts: rails-server-1
   become: true
   gather_facts: false
 
@@ -67,7 +67,7 @@
         state: restarted
         
 - name: Install Ruby 3.0.0 with RVM and custom OpenSSL for existing user 'rpx'
-  hosts: target #_rpx
+  hosts: rails-server-2
   become: yes
 
   vars:
