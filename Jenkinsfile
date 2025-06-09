@@ -9,18 +9,8 @@ pipeline {
   stages {
     stage('Checkout Code') {
       steps {
-        deleteDir()  // Clean workspace before checkout
-        checkout scm  // Uses the SCM configuration from the job
-      }
-    }
-
-    stage('Verify Files') {
-      steps {
-        sh '''
-          echo "Workspace contents:"
-          ls -la
-          test -f playbook.yml || exit 1
-        '''
+        deleteDir()
+        checkout scm
       }
     }
 
@@ -31,21 +21,16 @@ pipeline {
             echo "Using SSH Key at: $PEM_KEY"
             chmod 600 $PEM_KEY
             
-            # Create an inventory file without Groovy interpolation
-            cat > inventory.yml <<'EOF'
-all:
-  hosts:
-    rails-server:
-      ansible_host: 44.201.206.78
-      ansible_user: ubuntu
-      ansible_ssh_private_key_file: ${PEM_KEY}
-      ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+            # Create minimal inventory file
+            cat > inventory.yml <<EOF
+rails-server:
+  ansible_host: 44.201.206.78
+  ansible_user: ubuntu
+  ansible_ssh_private_key_file: $PEM_KEY
+  ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
 EOF
 
-            # Test SSH connection first
-            ssh -i $PEM_KEY -o StrictHostKeyChecking=no ubuntu@44.201.206.78 exit
-            
-            # Run playbook
+            # Run the playbook directly on target server
             ansible-playbook -i inventory.yml playbook.yml -v
           '''
         }
@@ -56,16 +41,6 @@ EOF
   post {
     always {
       cleanWs()
-      script {
-        // Only send email if failed and email is configured
-        if(currentBuild.result == 'FAILURE' && env.EMAIL_RECIPIENTS) {
-          emailext(
-            subject: "FAILED: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
-            body: "Check console output at ${env.BUILD_URL}",
-            to: env.EMAIL_RECIPIENTS
-          )
-        }
-      }
     }
   }
 }
