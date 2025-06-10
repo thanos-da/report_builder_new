@@ -41,7 +41,7 @@ all:
 EOF
 
             # Run the playbook directly on target server
-            ansible-playbook -i inventory.yml playbook.yml -v
+            ansible-playbook -i inventory.yml playbook.yml
           '''
         }
       }
