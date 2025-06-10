@@ -158,6 +158,8 @@
       shell: |
         source /home/{{ rpx_user }}/.rvm/scripts/rvm
         rvm install {{ ruby_version }} --with-openssl-dir={{ openssl_prefix }}
+        rvm use {{ ruby_version }} --default
+        ruby -v
       args:
         executable: /bin/bash
 
@@ -174,5 +176,10 @@
       shell: |
         source /home/{{ rpx_user }}/.rvm/scripts/rvm
         ruby -v
+        register: ruby_version_output
       args:
         executable: /bin/bash
+    
+    - name: Show Ruby version
+      ansible.builtin.debug:
+        msg: "Ruby version is: {{ ruby_version_output.stdout }}"
