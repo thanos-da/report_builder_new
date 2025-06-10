@@ -176,9 +176,9 @@
       shell: |
         source /home/{{ rpx_user }}/.rvm/scripts/rvm
         ruby -v
-        register: ruby_version_output
       args:
         executable: /bin/bash
+      register: ruby_version_output
     
     - name: Show Ruby version
       ansible.builtin.debug:
