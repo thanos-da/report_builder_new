@@ -76,6 +76,8 @@
     openssl_version: "1.1.1w"
     openssl_prefix: "/opt/openssl-1.1"
     ruby_version: "3.0.0"
+    deploy_branch: ""
+    app_path: ""
 
   tasks:
     - name: Update apt cache
@@ -185,20 +187,19 @@
         msg: "Ruby version is: {{ ruby_version_output.stdout }}"
     
     - name: Install bundler gem for each user
-      become_user: "{{ item }}"
+      become_user: "{{ rpx_user }}"
       shell: |
         source ~/.rvm/scripts/rvm
         gem install bundler
       args:
         executable: /bin/bash
-      loop: "{{ rvm_users }}"
 
     - name: Run Capistrano deployment with branch and username
       shell: |
-        sudo -u {{ deploy_user }} bash -c '
+        sudo -u {{ rpx_user }} bash -c '
           source ~/.rvm/scripts/rvm
           cd {{ app_path }}
-          cap qa deploy BRANCH={{ deploy_branch }} USERNAME={{ deploy_username }}
+          cap qa deploy BRANCH={{ deploy_branch }} USERNAME={{ rpx_user }}
         '
       args:
         executable: /bin/bash
